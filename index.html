@@ -4,8 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Камера — Чарівне Пригодництво!</title>
+
+  <!-- ✅ Виправлено: видалено пробіли, використовуємо стабільні CDN -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.0/aframe/build/aframe-ar.js"></script>
+
   <style>
     html, body {
       margin: 0;
@@ -23,6 +26,7 @@
       position: fixed;
       top: 0;
       left: 0;
+      z-index: 1; /* Переконуємося, що сцена під текстом, але видима */
     }
     #scanText, #successMessage, #loadingIndicator, #quizContainer {
       position: fixed;
@@ -206,7 +210,13 @@
   <div id="confetti"></div>
 
   <!-- AR Сцена -->
-  <a-scene embedded arjs="sourceType: webcam; detectionMode: mono; trackingMethod: best;">
+  <a-scene 
+    embedded 
+    arjs="sourceType: webcam; 
+          detectionMode: mono; 
+          trackingMethod: best; 
+          debugUIEnabled: false;">
+    
     <a-marker id="marker" type="pattern" url="marker.patt">
       <a-video 
         id="arVideo" 
@@ -215,7 +225,7 @@
         rotation="-90 0 0" 
         width="1.77" 
         height="1"
-        preload="none"
+        preload="auto"
         autoplay="false"
         muted="true">
       </a-video>
@@ -228,6 +238,7 @@
         <a-entity geometry="primitive: ring; radiusInner: 0.08; radiusOuter: 0.1; thetaLength: 180" material="color: black" rotation="-90 0 0" position="0 -0.05 0.15"></a-entity>
       </a-entity>
     </a-marker>
+    
     <a-entity camera></a-entity>
   </a-scene>
 
@@ -392,14 +403,14 @@
       scanText.style.display = 'none';
       successMessage.style.display = 'block';
       loadingIndicator.style.display = 'block';
-      playQuizBtn.style.display = 'none'; // приховуємо кнопку гри
+      playQuizBtn.style.display = 'none';
 
-      arVideo.play().catch(() => {});
+      arVideo.play().catch(e => console.error("Video play failed:", e));
     });
 
     arVideo.addEventListener('canplay', () => {
       loadingIndicator.style.display = 'none';
-      playQuizBtn.style.display = 'block'; // показуємо кнопку гри
+      playQuizBtn.style.display = 'block';
       successSound.play().catch(() => {});
       createConfetti();
     });
@@ -413,19 +424,19 @@
       confettiContainer.innerHTML = '';
     });
 
-    // Активація звуку
+    // Активація звуку при кліку
     document.body.addEventListener('click', () => {
       successSound.play().catch(() => {});
     }, { once: true });
 
-    // Фікс висоти
+    // Фікс висоти для мобільних
     function fixHeight() {
       document.body.style.height = window.innerHeight + 'px';
     }
     window.addEventListener('resize', fixHeight);
     fixHeight();
 
-    // Задня камера (для мобільних)
+    // Використовуємо задню камеру (для мобільних)
     AFRAME.utils.device.getCameraPermission = function () {
       return navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
