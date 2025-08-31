@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Камера — Чарівне Пригодництво!</title>
 
-  <!-- ✅ Виправлено: видалено пробіли, використовуємо стабільні CDN -->
+  <!-- ✅ Стабільні CDN -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.0/aframe/build/aframe-ar.js"></script>
 
@@ -20,20 +20,25 @@
       font-family: 'Comic Sans MS', cursive, sans-serif;
       background: #f0f8ff;
     }
+
+    /* 🎯 Ключовий фікс: a-scene має бути видимою */
     a-scene {
       width: 100% !important;
       height: 100% !important;
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 1; /* Переконуємося, що сцена під текстом, але видима */
+      z-index: 1; /* Нижче тексту, але має бути видимою */
+      background: transparent !important;
     }
+
     #scanText, #successMessage, #loadingIndicator, #quizContainer {
       position: fixed;
       z-index: 10;
       text-align: center;
       pointer-events: none;
     }
+
     #scanText {
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -43,11 +48,13 @@
       text-shadow: 2px 2px 10px yellow, 0 0 10px #ff00ff;
       animation: pulse 1.5s infinite;
     }
+
     @keyframes pulse {
       0% { transform: translate(-50%, -50%) scale(1); }
       50% { transform: translate(-50%, -50%) scale(1.1); }
       100% { transform: translate(-50%, -50%) scale(1); }
     }
+
     #successMessage {
       top: 20%; left: 50%;
       transform: translateX(-50%);
@@ -60,6 +67,7 @@
       box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
       display: none;
     }
+
     #loadingIndicator {
       top: 70%; left: 50%;
       transform: translateX(-50%);
@@ -72,6 +80,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       display: none;
     }
+
     #loadingIndicator span {
       display: inline-block;
       width: 10px; height: 10px;
@@ -79,8 +88,10 @@
       margin: 0 3px;
       animation: blink 1.4s infinite both;
     }
+
     #loadingIndicator span:nth-child(2) { animation-delay: 0.2s; }
     #loadingIndicator span:nth-child(3) { animation-delay: 0.4s; }
+
     @keyframes blink {
       0%, 80%, 100% { opacity: 0.3; }
       40% { opacity: 1; }
@@ -98,6 +109,7 @@
       gap: 20px;
       pointer-events: auto;
     }
+
     #question-text {
       font-size: 1.5em;
       color: #d10069;
@@ -107,6 +119,7 @@
       margin-bottom: 20px;
       white-space: pre-line;
     }
+
     .option-btn {
       padding: 15px 30px;
       font-size: 1.3em;
@@ -120,10 +133,12 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       transition: all 0.2s;
     }
+
     .option-btn:hover {
       background: #ffcc00;
       transform: scale(1.05);
     }
+
     #restart {
       background: #4CAF50;
       color: white;
@@ -133,6 +148,7 @@
       border-radius: 20px;
       cursor: pointer;
     }
+
     #backToAR {
       background: #2196F3;
       color: white;
@@ -151,6 +167,7 @@
       pointer-events: none;
       z-index: 9;
     }
+
     #quizConfetti {
       position: absolute;
       top: 0; left: 0;
@@ -175,6 +192,7 @@
       display: none;
       cursor: pointer;
     }
+
     #smartLessaBtn {
       position: fixed;
       bottom: 20px;
@@ -261,6 +279,13 @@
   <audio id="successSound" src="https://cdn.pixabay.com/audio/2021/09/21/audio_2811f3692c.mp3" preload="auto"></audio>
 
   <script>
+    // Проверка: работает ли AFRAME?
+    if (typeof AFRAME === 'undefined') {
+      console.error('AFRAME не завантажено!');
+    } else {
+      console.log('AFRAME завантажено');
+    }
+
     const questions = [
       { question: "Яка столиця України?", options: ["Київ", "Львів", "Одеса"], correct: 0 },
       { question: "Який колір прапора України?", options: ["Червоно-чорний", "Синьо-жовтий", "Зелено-білий"], correct: 1 },
@@ -283,7 +308,6 @@
     const quizContainer = document.getElementById('quizContainer');
     const quizConfetti = document.getElementById('quizConfetti');
 
-    // Показати питання
     function showQuestion() {
       const q = questions[currentQuestion];
       document.getElementById('question-text').textContent = q.question;
@@ -292,7 +316,6 @@
       document.getElementById('option3').textContent = q.options[2];
     }
 
-    // Обробка відповіді
     function handleOptionClick(selected) {
       if (selected === questions[currentQuestion].correct) {
         score++;
@@ -305,7 +328,6 @@
       }
     }
 
-    // Показати результат
     function showResult() {
       const stars = '⭐'.repeat(score);
       document.getElementById('question-text').innerHTML = 
@@ -316,7 +338,6 @@
       createConfettiInQuiz();
     }
 
-    // Показати вікторину
     function showQuiz() {
       arVideo.pause();
       quizContainer.style.display = 'flex';
@@ -328,7 +349,6 @@
       showQuestion();
     }
 
-    // Повернутися до AR
     document.getElementById('backToAR').onclick = () => {
       quizContainer.style.display = 'none';
       if (marker.classList.contains('visible')) {
@@ -336,7 +356,6 @@
       }
     };
 
-    // Почати знову
     document.getElementById('restart').onclick = () => {
       quizConfetti.innerHTML = '';
       document.getElementById('option1').style.display = 'block';
@@ -347,12 +366,10 @@
       showQuestion();
     };
 
-    // Додамо обробники до кнопок вікторини
     document.getElementById('option1').onclick = () => handleOptionClick(0);
     document.getElementById('option2').onclick = () => handleOptionClick(1);
     document.getElementById('option3').onclick = () => handleOptionClick(2);
 
-    // Конфетті в AR
     function createConfetti() {
       for (let i = 0; i < 100; i++) {
         const piece = document.createElement('div');
@@ -371,7 +388,6 @@
       }
     }
 
-    // Конфетті в вікторині
     function createConfettiInQuiz() {
       for (let i = 0; i < 100; i++) {
         const piece = document.createElement('div');
@@ -389,7 +405,6 @@
       }
     }
 
-    // Додаємо анімацію падіння
     const style = document.createElement('style');
     style.textContent = `
       @keyframes fall {
@@ -398,7 +413,6 @@
     `;
     document.head.appendChild(style);
 
-    // Події маркера
     marker.addEventListener('markerFound', () => {
       scanText.style.display = 'none';
       successMessage.style.display = 'block';
@@ -424,19 +438,16 @@
       confettiContainer.innerHTML = '';
     });
 
-    // Активація звуку при кліку
     document.body.addEventListener('click', () => {
       successSound.play().catch(() => {});
     }, { once: true });
 
-    // Фікс висоти для мобільних
     function fixHeight() {
       document.body.style.height = window.innerHeight + 'px';
     }
     window.addEventListener('resize', fixHeight);
     fixHeight();
 
-    // Використовуємо задню камеру (для мобільних)
     AFRAME.utils.device.getCameraPermission = function () {
       return navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
