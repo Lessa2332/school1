@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Камера — Чарівне Пригодництво!</title>
 
-  <!-- ✅ Стабільні CDN -->
+  <!-- Стабільні CDN -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.0/aframe/build/aframe-ar.js"></script>
 
@@ -21,15 +21,13 @@
       background: #f0f8ff;
     }
 
-    /* 🎯 Ключовий фікс: a-scene має бути видимою */
     a-scene {
       width: 100% !important;
       height: 100% !important;
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 1; /* Нижче тексту, але має бути видимою */
-      background: transparent !important;
+      z-index: 1;
     }
 
     #scanText, #successMessage, #loadingIndicator, #quizContainer {
@@ -245,7 +243,7 @@
         height="1"
         preload="auto"
         autoplay="false"
-        muted="true">
+        muted="false"> <!-- ✅ Звук УВІМКНЕНО -->
       </a-video>
 
       <!-- Смайлик -->
@@ -275,11 +273,8 @@
   <a href="https://youtube.com/playlist?list=PL6UDFwT9TzFxsVdFiEBsQ9yFpcYRPOpfO&si=IyXv1SkdPyvhcW7Z" 
      id="smartLessaBtn" target="_blank">👉 Дивись більше на @SmartLessa</a>
 
-  <!-- Звук -->
-  <audio id="successSound" src="https://cdn.pixabay.com/audio/2021/09/21/audio_2811f3692c.mp3" preload="auto"></audio>
-
   <script>
-    // Проверка: работает ли AFRAME?
+    // Перевірка AFRAME
     if (typeof AFRAME === 'undefined') {
       console.error('AFRAME не завантажено!');
     } else {
@@ -304,10 +299,10 @@
     const playQuizBtn = document.getElementById('playQuizBtn');
     const arVideo = document.getElementById('arVideo');
     const confettiContainer = document.getElementById('confetti');
-    const successSound = document.getElementById('successSound');
     const quizContainer = document.getElementById('quizContainer');
     const quizConfetti = document.getElementById('quizConfetti');
 
+    // Показати питання
     function showQuestion() {
       const q = questions[currentQuestion];
       document.getElementById('question-text').textContent = q.question;
@@ -316,6 +311,7 @@
       document.getElementById('option3').textContent = q.options[2];
     }
 
+    // Обробка відповіді
     function handleOptionClick(selected) {
       if (selected === questions[currentQuestion].correct) {
         score++;
@@ -328,6 +324,7 @@
       }
     }
 
+    // Показати результат
     function showResult() {
       const stars = '⭐'.repeat(score);
       document.getElementById('question-text').innerHTML = 
@@ -338,6 +335,7 @@
       createConfettiInQuiz();
     }
 
+    // Показати вікторину
     function showQuiz() {
       arVideo.pause();
       quizContainer.style.display = 'flex';
@@ -349,13 +347,16 @@
       showQuestion();
     }
 
+    // Повернутися до AR
     document.getElementById('backToAR').onclick = () => {
       quizContainer.style.display = 'none';
       if (marker.classList.contains('visible')) {
-        arVideo.play().catch(() => {});
+        arVideo.muted = false; // гарантія, що звук увімкнено
+        arVideo.play().catch(e => console.error("Play failed:", e));
       }
     };
 
+    // Почати знову
     document.getElementById('restart').onclick = () => {
       quizConfetti.innerHTML = '';
       document.getElementById('option1').style.display = 'block';
@@ -366,10 +367,12 @@
       showQuestion();
     };
 
+    // Кнопки вікторини
     document.getElementById('option1').onclick = () => handleOptionClick(0);
     document.getElementById('option2').onclick = () => handleOptionClick(1);
     document.getElementById('option3').onclick = () => handleOptionClick(2);
 
+    // Конфетті
     function createConfetti() {
       for (let i = 0; i < 100; i++) {
         const piece = document.createElement('div');
@@ -405,6 +408,7 @@
       }
     }
 
+    // Анімація падіння
     const style = document.createElement('style');
     style.textContent = `
       @keyframes fall {
@@ -413,19 +417,20 @@
     `;
     document.head.appendChild(style);
 
+    // Події маркера
     marker.addEventListener('markerFound', () => {
       scanText.style.display = 'none';
       successMessage.style.display = 'block';
       loadingIndicator.style.display = 'block';
       playQuizBtn.style.display = 'none';
 
+      arVideo.muted = false; // переконуємося, що звук увімкнено
       arVideo.play().catch(e => console.error("Video play failed:", e));
     });
 
     arVideo.addEventListener('canplay', () => {
       loadingIndicator.style.display = 'none';
       playQuizBtn.style.display = 'block';
-      successSound.play().catch(() => {});
       createConfetti();
     });
 
@@ -438,16 +443,20 @@
       confettiContainer.innerHTML = '';
     });
 
+    // 🔊 Активація звуку при кліку
     document.body.addEventListener('click', () => {
-      successSound.play().catch(() => {});
+      arVideo.muted = false;
+      arVideo.play().catch(() => {});
     }, { once: true });
 
+    // Фікс висоти
     function fixHeight() {
       document.body.style.height = window.innerHeight + 'px';
     }
     window.addEventListener('resize', fixHeight);
     fixHeight();
 
+    // Задня камера
     AFRAME.utils.device.getCameraPermission = function () {
       return navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
@@ -456,3 +465,4 @@
   </script>
 </body>
 </html>
+
